@@ -1,0 +1,63 @@
+---
+title: "VigieRAM — Rapport de surveillance génomique"
+format:
+  html:
+    embed-resources: true
+  pdf: default
+---
+
+```{python}
+#| tags: [parameters]
+#| echo: false
+
+sample_id = "ERR2093255"
+mykrobe_json = "../../results/ERR2093255/mykrobe/ERR2093255.json"
+```
+
+```{python}
+#| echo: false
+#| output: asis
+
+import json
+
+with open(mykrobe_json) as f:
+    mdata = json.load(f)
+mresult = mdata[list(mdata.keys())[0]]
+
+genotype = mresult["phylogenetics"]["lineage"]["lineage"][0]
+susc = mresult["susceptibility"]
+
+non_antibiotic_keys = {"pST", "z66"}
+abx = {k: v for k, v in susc.items() if k not in non_antibiotic_keys and not k.startswith("Inc")}
+
+resistant = [a for a in abx if abx[a].get("predict") == "R"]
+sensitive = [a for a in abx if abx[a].get("predict") == "S"]
+
+mdr_core = ["ampicillin", "chloramphenicol", "trimethoprim", "sulfonamides"]
+is_mdr = all(a in resistant for a in mdr_core)
+is_xdr = is_mdr and "ciprofloxacin" in resistant and "ceftriaxone" in resistant
+
+if is_xdr:
+    niveau_fr, niveau_en = "XDR (extrêmement résistant)", "XDR (extensively drug-resistant)"
+elif is_mdr:
+    niveau_fr, niveau_en = "MDR (multirésistant)", "MDR (multidrug-resistant)"
+else:
+    niveau_fr, niveau_en = "Pas de multirésistance détectée", "No multidrug resistance detected"
+
+print(f"## 🇫🇷 Échantillon `{sample_id}`\n")
+print(f"**Génotype (lignée) :** {genotype}\n")
+print(f"**Niveau de résistance global :** {niveau_fr}\n")
+print("| Antibiotique | Résultat |")
+print("|---|---|")
+for a, r in abx.items():
+    pred = r.get("predict", "NA")
+    label = "🔴 Résistant" if pred == "R" else ("🟢 Sensible" if pred == "S" else "⚪ Non testé")
+    print(f"| {a} | {label} |")
+
+print("\n---\n")
+print(f"## 🇬🇧 Sample `{sample_id}` (English summary)\n")
+print(f"**Genotype (lineage):** {genotype}\n")
+print(f"**Overall resistance level:** {niveau_en}\n")
+print(f"**Resistant to:** {', '.join(resistant) if resistant else 'none detected'}\n")
+print(f"**Susceptible to:** {', '.join(sensitive) if sensitive else 'none detected'}\n")
+```

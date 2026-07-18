@@ -1,0 +1,14 @@
+data/raw/*
+!data/raw/.gitkeep
+data/reference/kraken2_db/
+data/reference/typhoid-consortium-meta/
+data/reference/*.tar.gz
+mykrobe/
+results/*
+!results/.gitkeep
+workflows/report/*.html
+workflows/report/*.pdf
+.nextflow*
+work/
+*.fastq.gz
+*.fasta

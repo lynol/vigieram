@@ -1,0 +1,9 @@
+Data Accession,Country,Final_genotype,MDR,XDR
+ERR2093334,Pakistan,4.3.1.1.P1,True,True
+SRR8878443,USA,4.3.1.1.P1,True,True
+ERR319495,Cambodia,4.3.1.1,True,False
+ERR4790678,India,4.3.1,True,False
+ERR731380,Nigeria,3.1.1,True,False
+ERR586799,Thailand,2.3.4,False,False
+ERR319410,Cambodia,4.3.1.1,False,False
+ERR998638,Ethiopia,2.2.2,False,False
