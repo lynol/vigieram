@@ -1,0 +1,31 @@
+Data Accession,Country,Final_genotype,MDR,XDR
+ERR4047073,Pakistan,4.3.1.1.P1,True,True
+SRR10267562,Pakistan,4.3.1.1.P1,True,True
+ERR2093245,Pakistan,4.3.1.1.P1,True,True
+ERR4025757,Pakistan,4.3.1.1.P1,True,True
+ERR4047263,Pakistan,4.3.1.1.P1,True,True
+SRR11148910,United Kingdom,4.3.1.1.P1,True,True
+ERR2093272,Pakistan,4.3.1.1.P1,True,True
+ERR4189440,Pakistan,4.3.1.1.P1,True,True
+SRR9287478,United Kingdom,4.3.1.1.P1,True,True
+ERR4047164,Pakistan,4.3.1.1.P1,True,True
+ERR4362429,Bangladesh,4.3.1.1,True,False
+ERR2663508,Bangladesh,4.3.1.1,True,False
+SRR20666363,Zimbabwe,4.3.1.1.EA1,True,False
+ERR331390,United Kingdom,4.3.1.1,True,False
+ERR6938174,Nigeria,3.1.1,True,False
+SRR10139527,United Kingdom,4.3.1.1,True,False
+ERR4025717,Pakistan,4.3.1.1.P1,True,False
+SRR6289923,USA,4.3.1.1,True,False
+SRR10100115,United Kingdom,4.3.1.1.P1,True,False
+ERR1079243,Nepal,4.3.1.1,True,False
+ERR349370,Viet Nam,3.2.1,False,False
+SRR10674004,USA,4.3.1,False,False
+SRR8087129,United Kingdom,4.3.1.1,False,False
+SRR10062935,United Kingdom,2.1,False,False
+ERR326655,Indonesia,4.1,False,False
+ERR5161207,Bangladesh,2.3.3,False,False
+ERR4326125,Bangladesh,3.2.2,False,False
+ERR5200995,India,4.3.1.1,False,False
+ERR1788897,India,4.3.1.1,False,False
+SRR10746213,USA,2.0.2,False,False
