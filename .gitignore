@@ -12,3 +12,4 @@ workflows/report/*.pdf
 work/
 *.fastq.gz
 *.fasta
+data/reference/klebsiella_ncbi/
