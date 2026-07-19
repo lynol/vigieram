@@ -1,0 +1,57 @@
+---
+title: "VigieRAM — Rapport de surveillance génomique (Tuberculose)"
+format:
+  html:
+    embed-resources: true
+  pdf: default
+---
+
+```{python}
+#| tags: [parameters]
+#| echo: false
+
+sample_id = "ERR0000000"
+mykrobe_json = "../../results/ERR0000000/mykrobe/ERR0000000.json"
+```
+
+```{python}
+#| echo: false
+#| output: asis
+
+import json
+
+with open(mykrobe_json) as f:
+    mdata = json.load(f)
+mresult = mdata[list(mdata.keys())[0]]
+
+lineage = mresult["phylogenetics"]["lineage"]["lineage"]
+lineage_str = lineage[0] if lineage else "NA"
+susc = mresult["susceptibility"]
+
+resistant = [a for a in susc if susc[a].get("predict", "").upper() == "R"]
+sensitive = [a for a in susc if susc[a].get("predict", "").upper() == "S"]
+
+is_mdr = "Isoniazid" in resistant and "Rifampicin" in resistant
+fq = ["Ciprofloxacin", "Levofloxacin", "Moxifloxacin", "Ofloxacin"]
+is_pre_xdr = is_mdr and any(a in resistant for a in fq)
+
+if is_pre_xdr:
+    niveau_fr, niveau_en = "Pré-XDR (MDR + fluoroquinolones)", "Pre-XDR (MDR + fluoroquinolone resistance)"
+elif is_mdr:
+    niveau_fr, niveau_en = "MDR-TB (isoniazide + rifampicine)", "MDR-TB (isoniazid + rifampicin resistant)"
+else:
+    niveau_fr, niveau_en = "Pas de multirésistance détectée", "No multidrug resistance detected"
+
+print(f"## 🇫🇷 Échantillon `{sample_id}`\n")
+print(f"**Lignée :** {lineage_str}\n**Niveau de résistance global :** {niveau_fr}\n")
+print("| Antituberculeux | Résultat |\n|---|---|")
+for a, r in susc.items():
+    pred = r.get("predict", "NA").upper()
+    label = "🔴 Résistant" if pred == "R" else ("🟢 Sensible" if pred == "S" else "⚪ Non testé")
+    print(f"| {a} | {label} |")
+
+print(f"\n---\n## 🇬🇧 Sample `{sample_id}` (English summary)\n")
+print(f"**Lineage:** {lineage_str}\n**Overall resistance level:** {niveau_en}\n")
+print(f"**Resistant to:** {', '.join(resistant) if resistant else 'none detected'}\n")
+print(f"**Susceptible to:** {', '.join(sensitive) if sensitive else 'none detected'}\n")
+```

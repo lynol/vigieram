@@ -16,6 +16,4 @@
 
 ## Auteur
 
-[Alidou SANA] — Projet initié en 2026, en parallèle de mon doctorat sur la sélection
-génétique de la mouche soldat noire (Université Laval).
-EOF
+Alidou SANA — Projet initié en 2026, en parallèle de mon doctorat (Université Laval).

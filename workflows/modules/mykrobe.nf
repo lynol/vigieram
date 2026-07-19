@@ -4,6 +4,7 @@ process MYKROBE {
 
     input:
     tuple val(sample_id), path(read1), path(read2)
+    val species
 
     output:
     tuple val(sample_id), path("${sample_id}.json"), emit: result
@@ -11,7 +12,7 @@ process MYKROBE {
     script:
     """
     mykrobe predict \
-      --sample ${sample_id} --species typhi --format json \
+      --sample ${sample_id} --species ${species} --format json \
       --out ${sample_id}.json \
       --seq ${read1} ${read2}
     """
