@@ -13,3 +13,4 @@ work/
 *.fastq.gz
 *.fasta
 data/reference/klebsiella_ncbi/
+data/reference/cryptic/
