@@ -1,0 +1,98 @@
+---
+title: "VigieRAM — Rapport de surveillance génomique (Klebsiella)"
+format:
+  html:
+    embed-resources: true
+  pdf: default
+---
+
+```{python}
+#| tags: [parameters]
+#| echo: false
+
+sample_id = "GCA_049383885"
+kleborate_file = "../../results/GCA_049383885/kleborate/klebsiella_pneumo_complex_output.txt"
+```
+
+```{python}
+#| echo: false
+#| output: asis
+
+import pandas as pd
+
+df = pd.read_csv(kleborate_file, sep='\t')
+r = df.iloc[0]
+
+species = r.get('enterobacterales__species__species', 'NA')
+st = r.get('klebsiella_pneumo_complex__mlst__ST', 'NA')
+vscore = r.get('klebsiella_pneumo_complex__virulence_score__virulence_score', 'NA')
+rscore = r.get('klebsiella_pneumo_complex__resistance_score__resistance_score', 'NA')
+k_type = str(r.get('klebsiella_pneumo_complex__kaptive__K_type', 'NA'))
+o_type = str(r.get('klebsiella_pneumo_complex__kaptive__O_type', 'NA'))
+
+# Genes acquis, par classe
+gene_classes = {
+    'Aminosides': 'klebsiella_pneumo_complex__amr__AGly_acquired',
+    'Colistine': 'klebsiella_pneumo_complex__amr__Col_acquired',
+    'Fluoroquinolones': 'klebsiella_pneumo_complex__amr__Flq_acquired',
+    'Sulfamides': 'klebsiella_pneumo_complex__amr__Sul_acquired',
+    'Tetracyclines': 'klebsiella_pneumo_complex__amr__Tet_acquired',
+    'Trimethoprime': 'klebsiella_pneumo_complex__amr__Tmt_acquired',
+    'Beta-lactamines (generales)': 'klebsiella_pneumo_complex__amr__Bla_acquired',
+    'ESBL': 'klebsiella_pneumo_complex__amr__Bla_ESBL_acquired',
+    'Carbapenemases': 'klebsiella_pneumo_complex__amr__Bla_Carb_acquired',
+}
+# Mutations (mecanisme different des genes acquis, comptent aussi dans le score)
+mutation_classes = {
+    'Mutations SHV': 'klebsiella_pneumo_complex__amr__SHV_mutations',
+    'Mutations porines (Omp)': 'klebsiella_pneumo_complex__amr__Omp_mutations',
+    'Mutations colistine': 'klebsiella_pneumo_complex__amr__Col_mutations',
+    'Mutations fluoroquinolones': 'klebsiella_pneumo_complex__amr__Flq_mutations',
+}
+
+def collect(d):
+    return {name: r.get(col, '-') for name, col in d.items()
+            if r.get(col, '-') not in ('-', None) and pd.notna(r.get(col))}
+
+detected_genes = collect(gene_classes)
+detected_mutations = collect(mutation_classes)
+
+resistance_fr = "Résistance étendue (score max)" if rscore == 3 else ("Résistance significative" if rscore == 2 else ("Résistance limitée" if rscore == 1 else "Pas de résistance acquise majeure détectée"))
+
+print(f"## 🇫🇷 Échantillon `{sample_id}`\n")
+print(f"**Espèce :** {species}  \n**Type de séquence (ST) :** {st}\n")
+print(f"**Score de résistance :** {rscore}/3 — {resistance_fr}\n")
+print(f"**Score de virulence :** {vscore}/5\n")
+k_label = k_type if k_type.upper().startswith('K') else f"K{k_type}"
+o_label = o_type if o_type.upper().startswith('O') else f"O{o_type}"
+print(f"**Sérotype (capsule / antigène) :** {k_label} / {o_label}\n")
+
+if detected_genes:
+    print("**Gènes de résistance acquis, par classe :**\n")
+    print("| Classe | Gène(s) |")
+    print("|---|---|")
+    for name, genes in detected_genes.items():
+        print(f"| {name} | {genes} |")
+    print()
+
+if detected_mutations:
+    print("**Mutations de résistance détectées (mécanisme distinct des gènes acquis) :**\n")
+    print("| Mécanisme | Détail |")
+    print("|---|---|")
+    for name, mut in detected_mutations.items():
+        print(f"| {name} | {mut} |")
+    print()
+
+if not detected_genes and not detected_mutations:
+    print("**Aucune résistance acquise majeure détectée.**\n")
+
+print("\n---\n")
+print(f"## 🇬🇧 Sample `{sample_id}` (English summary)\n")
+print(f"**Species:** {species}  \n**Sequence Type (ST):** {st}\n")
+print(f"**Resistance score:** {rscore}/3\n**Virulence score:** {vscore}/5\n")
+all_mechanisms = list(detected_genes.keys()) + list(detected_mutations.keys())
+if all_mechanisms:
+    print(f"**Resistance mechanisms detected:** {', '.join(all_mechanisms)}\n")
+else:
+    print("**No major acquired resistance detected.**\n")
+```
