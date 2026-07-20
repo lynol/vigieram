@@ -5,6 +5,9 @@
 
 {% if success %}
 <div class="alert alert-success">Résultat enregistré avec succès.</div>
+{% if implausible %}
+<div class="alert alert-danger">⚠️ Cette combinaison organisme/antibiotique n'a normalement aucun sens biologique (résistance intrinsèque connue, indépendante de toute résistance acquise). Vérifiez votre saisie.</div>
+{% endif %}
 {% if context %}
 <div class="card border-info mb-4">
   <div class="card-header bg-info text-white">Contexte génomique - {{ organism }}</div>

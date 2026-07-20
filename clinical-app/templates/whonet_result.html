@@ -8,5 +8,10 @@
 <div class="alert alert-warning">
 Colonnes potentiellement identifiantes automatiquement exclues : {{ dropped_cols|join(', ') }}
 </div>
+{% if n_implausible > 0 %}
+<div class="alert alert-danger">
+⚠️ {{ n_implausible }} résultat(s) biologiquement improbable(s) détecté(s) (ex. résistance intrinsèque déjà connue, indépendante de toute résistance acquise) — probablement des erreurs de saisie ou de mapping dans le fichier source. Import quand même effectué ; à vérifier.
+</div>
+{% endif %}
 <a href="/mon-etablissement" class="btn btn-primary">Voir les statistiques</a>
 {% endblock %}

@@ -33,6 +33,24 @@ def load_organism_codes():
 
 ORGANISM_CODES = load_organism_codes()
 
+def load_intrinsic_resistance():
+    pairs = set()
+    try:
+        with open('../data/reference/intrinsic_resistance.csv') as f:
+            reader = csv_module.DictReader(f)
+            for row in reader:
+                org = ORGANISM_CODES.get(row['organism_code'].upper(), row['organism_code'])
+                abx = ANTIBIOTIC_CODES.get(row['antibiotic_code'].upper(), row['antibiotic_code'].lower())
+                pairs.add((org, abx))
+    except FileNotFoundError:
+        pass
+    return pairs
+
+INTRINSIC_RESISTANT = load_intrinsic_resistance()
+
+def check_biological_plausibility(organism, antibiotic):
+    return (organism, antibiotic.lower()) in INTRINSIC_RESISTANT
+
 # Colonnes systematiquement exclues avant tout traitement - jamais stockees
 IDENTIFYING_COLUMNS = ['Last name', 'First name', 'Identification number', 'Specimen number', 'Comment']
 
@@ -110,7 +128,8 @@ def entry_form():
         conn.commit()
         conn.close()
         context = get_genomic_context(organism, region, antibiotic)
-        return render_template('entry_form.html', success=True, context=context, organism=organism, antibiotic=antibiotic)
+        implausible = check_biological_plausibility(organism, antibiotic)
+        return render_template('entry_form.html', success=True, context=context, organism=organism, antibiotic=antibiotic, implausible=implausible)
     return render_template('entry_form.html', success=False)
 
 @app.route('/mon-etablissement')
@@ -167,6 +186,7 @@ def import_whonet():
 
         conn = get_conn()
         n_inserted = 0
+        n_implausible = 0
         for _, row in df.iterrows():
             raw_organism = str(row.get('Organism', 'Inconnu'))
             organism = ORGANISM_CODES.get(raw_organism.upper(), raw_organism)
@@ -181,9 +201,11 @@ def import_whonet():
                     (str(organism), antibiotic, result, 'labo_reference', facility_name, region, '', '', str(date.today()), 'whonet_import')
                 )
                 n_inserted += 1
+                if check_biological_plausibility(str(organism), antibiotic):
+                    n_implausible += 1
         conn.commit()
         conn.close()
-        return render_template('whonet_result.html', n_rows=len(df), n_inserted=n_inserted, dropped_cols=IDENTIFYING_COLUMNS)
+        return render_template('whonet_result.html', n_rows=len(df), n_inserted=n_inserted, dropped_cols=IDENTIFYING_COLUMNS, n_implausible=n_implausible)
     return render_template('whonet_upload.html')
 
 if __name__ == '__main__':
