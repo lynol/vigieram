@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect
 import sqlite3
 import json
+import subprocess
+
 from datetime import date
 
 app = Flask(__name__)
@@ -101,6 +103,20 @@ def facility_stats():
         stats[key]['total'] += 1
 
     return render_template('facility_stats.html', facility=facility, stats=stats, n_entries=len(rows))
+
+@app.route('/mon-etablissement/rapport')
+def facility_report():
+    facility = request.args.get('facility_name', '')
+    if not facility:
+        return redirect('/mon-etablissement')
+    subprocess.run([
+        'quarto', 'render', 'facility_report.qmd',
+        '-P', f'facility:{facility}',
+        '-P', 'db_path:../data/db/vigieram.db',
+        '--to', 'pdf'
+    ], check=True)
+    from flask import send_file
+    return send_file('facility_report.pdf', as_attachment=True)
 
 if __name__ == '__main__':
     init_db()

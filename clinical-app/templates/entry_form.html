@@ -1,157 +1,119 @@
-<!DOCTYPE html>
-<html lang="fr">
+{% extends "base.html" %}
+{% block title %}VigieRAM - Saisie{% endblock %}
+{% block content %}
+<h1 class="mb-4">Saisie d'un résultat d'antibiogramme</h1>
 
-<head>
-    <meta charset="UTF-8">
-    <title>VigieRAM - Saisie antibiogramme</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            max-width: 500px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-
-        label {
-            display: block;
-            margin-top: 12px;
-            font-weight: bold;
-        }
-
-        input,
-        select {
-            width: 100%;
-            padding: 8px;
-            margin-top: 4px;
-            box-sizing: border-box;
-        }
-
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: #2c7a4b;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .success {
-            background: #d4edda;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-        }
-
-        .context {
-            background: #e7f1ff;
-            border-left: 4px solid #2c7a9b;
-            padding: 12px 15px;
-            margin-bottom: 20px;
-        }
-
-        .warn {
-            color: #a15c00;
-            font-weight: bold;
-        }
-    </style>
-</head>
-
-<body>
-    <h1>VigieRAM - Saisie d'un résultat d'antibiogramme</h1>
-    {% if success %}
-    <div class="success">Résultat enregistré avec succès.</div>
-    {% if context %}
-    <div class="context">
-        <h3>Contexte génomique - {{ organism }}</h3>
-        <p class="warn">Portée : {{ context.scope }}</p>
-        <p>{{ context.total }} profils disponibles - {{ context.pct_mdr }}% MDR, {{ context.pct_xdr }}% XDR</p>
-        {% if context.abx_stat %}
-        <p><strong>Spécifique à "{{ antibiotic }}"</strong> : {{ context.abx_stat.pct_r }}% de résistance connue (sur
-            {{ context.abx_stat.n }} profils comportant cette donnée)</p>
-        {% else %}
-        <p><em>Pas de donnée détaillée disponible pour cet antibiotique précis.</em></p>
-        {% endif %}
-        <p><em>Donnée informative - ne remplace pas votre jugement clinique.</em></p>
-    </div>
+{% if success %}
+<div class="alert alert-success">Résultat enregistré avec succès.</div>
+{% if context %}
+<div class="card border-info mb-4">
+  <div class="card-header bg-info text-white">Contexte génomique - {{ organism }}</div>
+  <div class="card-body">
+    <p class="text-muted small">⚠️ Ces chiffres viennent de <strong>données génomiques publiques mondiales</strong> - <strong>pas</strong> de vos saisies ni de celles d'autres établissements. Aucune donnée génomique de Côte d'Ivoire n'existe encore.</p>
+    <p><span class="badge bg-warning text-dark">Portée : {{ context.scope }}</span></p>
+    <p>{{ context.total }} profils disponibles - {{ context.pct_mdr }}% MDR, {{ context.pct_xdr }}% XDR</p>
+    {% if context.abx_stat %}
+    <p><strong>Spécifique à "{{ antibiotic }}"</strong> : {{ context.abx_stat.pct_r }}% de résistance connue (sur {{ context.abx_stat.n }} profils)</p>
+    {% else %}
+    <p class="fst-italic">Pas de donnée détaillée disponible pour cet antibiotique précis.</p>
     {% endif %}
-    {% endif %}
-    <form method="POST">
-        <label>Organisme</label>
-        <select name="organism" required>
-            <option value="Salmonella Typhi">Salmonella Typhi</option>
-            <option value="Klebsiella pneumoniae">Klebsiella pneumoniae</option>
-            <option value="Mycobacterium tuberculosis">Mycobacterium tuberculosis</option>
-        </select>
-        <label>Antibiotique testé (en anglais, ex: ampicillin, ciprofloxacin)</label>
-        <input type="text" name="antibiotic" required>
-        <label>Résultat</label>
-        <select name="result" required>
-            <option value="R">Résistant</option>
-            <option value="I">Intermédiaire</option>
-            <option value="S">Sensible</option>
-        </select>
-        <label>Type d'établissement</label>
-        <select name="facility_type">
-            <option value="hopital">Hôpital</option>
-            <option value="clinique">Clinique</option>
-            <option value="labo_reference">Laboratoire de référence</option>
-        </select>
+    <p class="fst-italic mb-0">Donnée informative - ne remplace pas votre jugement clinique.</p>
+  </div>
+</div>
+{% endif %}
+{% endif %}
 
-        <label>Nom de l'établissement (hôpital, clinique...)</label>
-        <input type="text" name="facility_name" placeholder="ex: CHU Bouaké">
-        
-        <label>Localité précise (optionnel)</label>
-        <input type="text" name="locality" placeholder="ex: quartier, commune...">
+<form method="POST" class="card p-4 shadow-sm">
+  <div class="mb-3">
+    <label class="form-label">Organisme</label>
+    <select name="organism" class="form-select" required>
+      <option value="Salmonella Typhi">Salmonella Typhi</option>
+      <option value="Klebsiella pneumoniae">Klebsiella pneumoniae</option>
+      <option value="Mycobacterium tuberculosis">Mycobacterium tuberculosis</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Antibiotique testé (en anglais, ex: ampicillin, ciprofloxacin)</label>
+    <input type="text" name="antibiotic" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Résultat</label>
+    <select name="result" class="form-select" required>
+      <option value="R">Résistant</option>
+      <option value="I">Intermédiaire</option>
+      <option value="S">Sensible</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Type d'établissement</label>
+    <select name="facility_type" class="form-select">
+      <option value="hopital">Hôpital</option>
+      <option value="clinique">Clinique</option>
+      <option value="labo_reference">Laboratoire de référence</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Nom de l'établissement</label>
+    <input type="text" name="facility_name" class="form-control" placeholder="ex: CHU Bouaké">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Localité précise (optionnel)</label>
+    <input type="text" name="locality" class="form-control" placeholder="ex: quartier, commune...">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Région</label>
+    <select name="region" class="form-select" required>
+      <optgroup label="Districts autonomes">
+        <option value="Abidjan">Abidjan</option>
+        <option value="Yamoussoukro">Yamoussoukro</option>
+      </optgroup>
+      <optgroup label="Régions">
+        <option value="Agnéby-Tiassa">Agnéby-Tiassa</option>
+        <option value="Bafing">Bafing</option>
+        <option value="Bagoué">Bagoué</option>
+        <option value="Bélier">Bélier</option>
+        <option value="Béré">Béré</option>
+        <option value="Bounkani">Bounkani</option>
+        <option value="Cavally">Cavally</option>
+        <option value="Folon">Folon</option>
+        <option value="Gbêkê">Gbêkê</option>
+        <option value="Gbôklé">Gbôklé</option>
+        <option value="Gôh">Gôh</option>
+        <option value="Gontougo">Gontougo</option>
+        <option value="Grands Ponts">Grands Ponts</option>
+        <option value="Guémon">Guémon</option>
+        <option value="Hambol">Hambol</option>
+        <option value="Haut-Sassandra">Haut-Sassandra</option>
+        <option value="Iffou">Iffou</option>
+        <option value="Indénié-Djuablin">Indénié-Djuablin</option>
+        <option value="Kabadougou">Kabadougou</option>
+        <option value="La Mé">La Mé</option>
+        <option value="Lôh-Djiboua">Lôh-Djiboua</option>
+        <option value="Marahoué">Marahoué</option>
+        <option value="Moronou">Moronou</option>
+        <option value="Nawa">Nawa</option>
+        <option value="N'zi">N'zi</option>
+        <option value="Poro">Poro</option>
+        <option value="San-Pédro">San-Pédro</option>
+        <option value="Sud-Comoé">Sud-Comoé</option>
+        <option value="Tchologo">Tchologo</option>
+        <option value="Tonkpi">Tonkpi</option>
+        <option value="Worodougou">Worodougou</option>
+      </optgroup>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Contexte</label>
+    <select name="context" class="form-select">
+      <option value="">Non précisé</option>
+      <option value="communautaire">Communautaire</option>
+      <option value="nosocomial">Nosocomial</option>
+    </select>
+  </div>
+  <button type="submit" class="btn btn-success">Enregistrer</button>
+</form>
 
-        <label>Région</label>
-        <select name="region" required>
-            <optgroup label="Districts autonomes">
-                <option value="Abidjan">Abidjan</option>
-                <option value="Yamoussoukro">Yamoussoukro</option>
-            </optgroup>
-            <optgroup label="Régions">
-                <option value="Agnéby-Tiassa">Agnéby-Tiassa</option>
-                <option value="Bafing">Bafing</option>
-                <option value="Bagoué">Bagoué</option>
-                <option value="Bélier">Bélier</option>
-                <option value="Béré">Béré</option>
-                <option value="Bounkani">Bounkani</option>
-                <option value="Cavally">Cavally</option>
-                <option value="Folon">Folon</option>
-                <option value="Gbêkê">Gbêkê</option>
-                <option value="Gbôklé">Gbôklé</option>
-                <option value="Gôh">Gôh</option>
-                <option value="Gontougo">Gontougo</option>
-                <option value="Grands Ponts">Grands Ponts</option>
-                <option value="Guémon">Guémon</option>
-                <option value="Hambol">Hambol</option>
-                <option value="Haut-Sassandra">Haut-Sassandra</option>
-                <option value="Iffou">Iffou</option>
-                <option value="Indénié-Djuablin">Indénié-Djuablin</option>
-                <option value="Kabadougou">Kabadougou</option>
-                <option value="La Mé">La Mé</option>
-                <option value="Lôh-Djiboua">Lôh-Djiboua</option>
-                <option value="Marahoué">Marahoué</option>
-                <option value="Moronou">Moronou</option>
-                <option value="Nawa">Nawa</option>
-                <option value="N'zi">N'zi</option>
-                <option value="Poro">Poro</option>
-                <option value="San-Pédro">San-Pédro</option>
-                <option value="Sud-Comoé">Sud-Comoé</option>
-                <option value="Tchologo">Tchologo</option>
-                <option value="Tonkpi">Tonkpi</option>
-                <option value="Worodougou">Worodougou</option>
-            </optgroup>
-        </select>
-        <label>Contexte</label>
-        <select name="context">
-            <option value="">Non précisé</option>
-            <option value="communautaire">Communautaire</option>
-            <option value="nosocomial">Nosocomial</option>
-        </select>
-        <button type="submit">Enregistrer</button>
-    </form>
-</body>
-
-</html>
+<p class="mt-4">
+  <a href="/mon-etablissement" class="btn btn-outline-primary">📊 Voir les statistiques de mon établissement</a>
+</p>
+{% endblock %}

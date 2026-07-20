@@ -1,19 +1,13 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head><meta charset="UTF-8"><title>VigieRAM — Mon établissement</title>
-<style>
-body { font-family: sans-serif; max-width: 500px; margin: 40px auto; padding: 0 20px; }
-input { width: 100%; padding: 8px; margin-top: 8px; box-sizing: border-box; }
-button { margin-top: 15px; padding: 10px 20px; background: #2c7a4b; color: white; border: none; border-radius: 4px; cursor: pointer; }
-</style>
-</head>
-<body>
-<h1>Voir les statistiques de mon établissement</h1>
-<form method="GET">
-<label>Nom de l'établissement (exactement comme saisi précédemment)</label>
-<input type="text" name="facility_name" placeholder="ex: CHU Bouaké" required>
-<button type="submit">Afficher</button>
+{% extends "base.html" %}
+{% block title %}VigieRAM - Mon établissement{% endblock %}
+{% block content %}
+<h1 class="mb-4">Voir les statistiques de mon établissement</h1>
+<form method="GET" class="card p-4 shadow-sm">
+  <div class="mb-3">
+    <label class="form-label">Nom de l'établissement (exactement comme saisi précédemment)</label>
+    <input type="text" name="facility_name" class="form-control" placeholder="ex: CHU Bouaké" required>
+  </div>
+  <button type="submit" class="btn btn-primary">Afficher</button>
 </form>
-<p><a href="/">← Retour à la saisie</a></p>
-</body>
-</html>
+<p class="mt-3"><a href="/">← Retour à la saisie</a></p>
+{% endblock %}
