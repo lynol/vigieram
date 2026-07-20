@@ -16,4 +16,4 @@
 
 ## Auteur
 
-Alidou SANA — Projet initié en 2026, en parallèle de mon doctorat (Université Laval).
+Alidou SANA - Projet initié en 2026, en parallèle de mon doctorat (Université Laval).
