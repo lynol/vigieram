@@ -4,6 +4,7 @@ import pandas as pd
 import json
 import subprocess
 from datetime import date
+import csv as csv_module
 import re
 
 
@@ -18,6 +19,19 @@ ANTIBIOTIC_CODES = {
     'KAN': 'kanamycin', 'STR': 'streptomycin', 'LVX': 'levofloxacin', 'MXF': 'moxifloxacin',
     'INH': 'isoniazid', 'EMB': 'ethambutol', 'PZA': 'pyrazinamide', 'LZD': 'linezolid',
 }
+
+def load_organism_codes():
+    codes = {}
+    try:
+        with open('../data/reference/whonet_organism_codes.csv') as f:
+            reader = csv_module.DictReader(f)
+            for row in reader:
+                codes[row['code'].upper()] = row['full_name']
+    except FileNotFoundError:
+        pass
+    return codes
+
+ORGANISM_CODES = load_organism_codes()
 
 # Colonnes systematiquement exclues avant tout traitement - jamais stockees
 IDENTIFYING_COLUMNS = ['Last name', 'First name', 'Identification number', 'Specimen number', 'Comment']
@@ -154,7 +168,8 @@ def import_whonet():
         conn = get_conn()
         n_inserted = 0
         for _, row in df.iterrows():
-            organism = row.get('Organism', 'Inconnu')
+            raw_organism = str(row.get('Organism', 'Inconnu'))
+            organism = ORGANISM_CODES.get(raw_organism.upper(), raw_organism)
             for col in abx_columns:
                 result = row.get(col)
                 if pd.isna(result) or result not in ('S', 'I', 'R'):
