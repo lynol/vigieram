@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><title>VigieRAM - Mon établissement</title>
+<style>
+body { font-family: sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; }
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+th { background: #2c7a4b; color: white; }
+.high-r { background: #f8d7da; }
+</style>
+</head>
+<body>
+<h1>Antibiogramme cumulé - {{ facility }}</h1>
+<p>{{ n_entries }} résultats enregistrés au total.</p>
+<table>
+<tr><th>Organisme</th><th>Antibiotique</th><th>Résistant</th><th>Intermédiaire</th><th>Sensible</th><th>% Résistance</th></tr>
+{% for (organism, antibiotic), s in stats.items() %}
+<tr class="{{ 'high-r' if (100*s['R']/s['total']) > 50 else '' }}">
+<td>{{ organism }}</td><td>{{ antibiotic }}</td><td>{{ s['R'] }}</td><td>{{ s['I'] }}</td><td>{{ s['S'] }}</td>
+<td>{{ (100*s['R']/s['total'])|round(1) }}%</td>
+</tr>
+{% endfor %}
+</table>
+<p><a href="/">← Retour à la saisie</a></p>
+</body>
+</html>

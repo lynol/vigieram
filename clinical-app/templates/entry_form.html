@@ -1,51 +1,95 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
-    <title>VigieRAM — Saisie antibiogramme</title>
+    <title>VigieRAM - Saisie antibiogramme</title>
     <style>
-        body { font-family: sans-serif; max-width: 500px; margin: 40px auto; padding: 0 20px; }
-        label { display: block; margin-top: 12px; font-weight: bold; }
-        input, select { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; }
-        button { margin-top: 20px; padding: 10px 20px; background: #2c7a4b; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .success { background: #d4edda; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
-        .context { background: #e7f1ff; border-left: 4px solid #2c7a9b; padding: 12px 15px; margin-bottom: 20px; }
-        .context h3 { margin-top: 0; }
+        body {
+            font-family: sans-serif;
+            max-width: 500px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #2c7a4b;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .success {
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .context {
+            background: #e7f1ff;
+            border-left: 4px solid #2c7a9b;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+        }
+
+        .warn {
+            color: #a15c00;
+            font-weight: bold;
+        }
     </style>
 </head>
+
 <body>
-    <h1>VigieRAM — Saisie d'un résultat d'antibiogramme</h1>
-
+    <h1>VigieRAM - Saisie d'un résultat d'antibiogramme</h1>
     {% if success %}
-        <div class="success">Résultat enregistré avec succès.</div>
-        {% if context %}
-        <div class="context">
-            <h3>Contexte génomique connu — {{ organism }}</h3>
-            <p>Sur <strong>{{ context.total }}</strong> profils génomiques disponibles pour cet organisme :</p>
-            <p>{{ context.pct_mdr }}% multirésistants (MDR)</p>
-            <p>{{ context.pct_xdr }}% extrêmement résistants (XDR)</p>
-            <p><em>Donnée informative issue de la surveillance génomique — ne remplace pas votre jugement clinique.</em></p>
-        </div>
+    <div class="success">Résultat enregistré avec succès.</div>
+    {% if context %}
+    <div class="context">
+        <h3>Contexte génomique - {{ organism }}</h3>
+        <p class="warn">Portée : {{ context.scope }}</p>
+        <p>{{ context.total }} profils disponibles - {{ context.pct_mdr }}% MDR, {{ context.pct_xdr }}% XDR</p>
+        {% if context.abx_stat %}
+        <p><strong>Spécifique à "{{ antibiotic }}"</strong> : {{ context.abx_stat.pct_r }}% de résistance connue (sur
+            {{ context.abx_stat.n }} profils comportant cette donnée)</p>
         {% else %}
-        <div class="context"><em>Aucune donnée génomique disponible pour cet organisme pour le moment.</em></div>
+        <p><em>Pas de donnée détaillée disponible pour cet antibiotique précis.</em></p>
         {% endif %}
+        <p><em>Donnée informative - ne remplace pas votre jugement clinique.</em></p>
+    </div>
     {% endif %}
-
+    {% endif %}
     <form method="POST">
         <label>Organisme</label>
         <select name="organism" required>
             <option value="Salmonella Typhi">Salmonella Typhi</option>
             <option value="Klebsiella pneumoniae">Klebsiella pneumoniae</option>
             <option value="Mycobacterium tuberculosis">Mycobacterium tuberculosis</option>
-            <option value="Autre">Autre</option>
         </select>
-        <label>Antibiotique testé</label>
+        <label>Antibiotique testé (en anglais, ex: ampicillin, ciprofloxacin)</label>
         <input type="text" name="antibiotic" required>
         <label>Résultat</label>
         <select name="result" required>
-            <option value="R">Résistant (R)</option>
-            <option value="I">Intermédiaire (I)</option>
-            <option value="S">Sensible (S)</option>
+            <option value="R">Résistant</option>
+            <option value="I">Intermédiaire</option>
+            <option value="S">Sensible</option>
         </select>
         <label>Type d'établissement</label>
         <select name="facility_type">
@@ -53,9 +97,54 @@
             <option value="clinique">Clinique</option>
             <option value="labo_reference">Laboratoire de référence</option>
         </select>
+
+        <label>Nom de l'établissement (hôpital, clinique...)</label>
+        <input type="text" name="facility_name" placeholder="ex: CHU Bouaké">
+        
+        <label>Localité précise (optionnel)</label>
+        <input type="text" name="locality" placeholder="ex: quartier, commune...">
+
         <label>Région</label>
-        <input type="text" name="region" placeholder="ex: Abidjan, Bouaké...">
-        <label>Contexte (optionnel)</label>
+        <select name="region" required>
+            <optgroup label="Districts autonomes">
+                <option value="Abidjan">Abidjan</option>
+                <option value="Yamoussoukro">Yamoussoukro</option>
+            </optgroup>
+            <optgroup label="Régions">
+                <option value="Agnéby-Tiassa">Agnéby-Tiassa</option>
+                <option value="Bafing">Bafing</option>
+                <option value="Bagoué">Bagoué</option>
+                <option value="Bélier">Bélier</option>
+                <option value="Béré">Béré</option>
+                <option value="Bounkani">Bounkani</option>
+                <option value="Cavally">Cavally</option>
+                <option value="Folon">Folon</option>
+                <option value="Gbêkê">Gbêkê</option>
+                <option value="Gbôklé">Gbôklé</option>
+                <option value="Gôh">Gôh</option>
+                <option value="Gontougo">Gontougo</option>
+                <option value="Grands Ponts">Grands Ponts</option>
+                <option value="Guémon">Guémon</option>
+                <option value="Hambol">Hambol</option>
+                <option value="Haut-Sassandra">Haut-Sassandra</option>
+                <option value="Iffou">Iffou</option>
+                <option value="Indénié-Djuablin">Indénié-Djuablin</option>
+                <option value="Kabadougou">Kabadougou</option>
+                <option value="La Mé">La Mé</option>
+                <option value="Lôh-Djiboua">Lôh-Djiboua</option>
+                <option value="Marahoué">Marahoué</option>
+                <option value="Moronou">Moronou</option>
+                <option value="Nawa">Nawa</option>
+                <option value="N'zi">N'zi</option>
+                <option value="Poro">Poro</option>
+                <option value="San-Pédro">San-Pédro</option>
+                <option value="Sud-Comoé">Sud-Comoé</option>
+                <option value="Tchologo">Tchologo</option>
+                <option value="Tonkpi">Tonkpi</option>
+                <option value="Worodougou">Worodougou</option>
+            </optgroup>
+        </select>
+        <label>Contexte</label>
         <select name="context">
             <option value="">Non précisé</option>
             <option value="communautaire">Communautaire</option>
@@ -64,4 +153,5 @@
         <button type="submit">Enregistrer</button>
     </form>
 </body>
+
 </html>
