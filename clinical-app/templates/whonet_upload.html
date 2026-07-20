@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}VigieRAM — Import WHONET{% endblock %}
+{% block content %}
+<h1 class="mb-4">Importer un export WHONET</h1>
+<div class="alert alert-info">
+Les colonnes potentiellement identifiantes (nom, prénom, numéros d'identification) sont automatiquement supprimées avant tout enregistrement — jamais stockées, même temporairement.
+</div>
+<form method="POST" enctype="multipart/form-data" class="card p-4 shadow-sm">
+  <div class="mb-3">
+    <label class="form-label">Fichier CSV export WHONET</label>
+    <input type="file" name="whonet_file" class="form-control" accept=".csv" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Nom de l'établissement (s'applique à tout le fichier)</label>
+    <input type="text" name="facility_name" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Région</label>
+    <select name="region" class="form-select" required>
+      <optgroup label="Districts autonomes">
+        <option value="Abidjan">Abidjan</option>
+        <option value="Yamoussoukro">Yamoussoukro</option>
+      </optgroup>
+      <optgroup label="Régions">
+        <option value="Agnéby-Tiassa">Agnéby-Tiassa</option>
+        <option value="Bafing">Bafing</option>
+        <option value="Bagoué">Bagoué</option>
+        <option value="Bélier">Bélier</option>
+        <option value="Béré">Béré</option>
+        <option value="Bounkani">Bounkani</option>
+        <option value="Cavally">Cavally</option>
+        <option value="Folon">Folon</option>
+        <option value="Gbêkê">Gbêkê</option>
+        <option value="Gbôklé">Gbôklé</option>
+        <option value="Gôh">Gôh</option>
+        <option value="Gontougo">Gontougo</option>
+        <option value="Grands Ponts">Grands Ponts</option>
+        <option value="Guémon">Guémon</option>
+        <option value="Hambol">Hambol</option>
+        <option value="Haut-Sassandra">Haut-Sassandra</option>
+        <option value="Iffou">Iffou</option>
+        <option value="Indénié-Djuablin">Indénié-Djuablin</option>
+        <option value="Kabadougou">Kabadougou</option>
+        <option value="La Mé">La Mé</option>
+        <option value="Lôh-Djiboua">Lôh-Djiboua</option>
+        <option value="Marahoué">Marahoué</option>
+        <option value="Moronou">Moronou</option>
+        <option value="Nawa">Nawa</option>
+        <option value="N'zi">N'zi</option>
+        <option value="Poro">Poro</option>
+        <option value="San-Pédro">San-Pédro</option>
+        <option value="Sud-Comoé">Sud-Comoé</option>
+        <option value="Tchologo">Tchologo</option>
+        <option value="Tonkpi">Tonkpi</option>
+        <option value="Worodougou">Worodougou</option>
+      </optgroup>
+    </select>
+  </div>
+  <button type="submit" class="btn btn-success">Importer</button>
+</form>
+{% endblock %}

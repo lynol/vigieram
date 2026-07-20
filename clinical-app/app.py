@@ -1,9 +1,26 @@
 from flask import Flask, render_template, request, redirect
 import sqlite3
+import pandas as pd
 import json
 import subprocess
-
 from datetime import date
+import re
+
+
+ANTIBIOTIC_CODES = {
+    'AMP': 'ampicillin', 'AMC': 'amoxicillin-clavulanic acid', 'TZP': 'piperacillin-tazobactam',
+    'FEP': 'cefepime', 'CTX': 'cefotaxime', 'FOX': 'cefoxitin', 'CAZ': 'ceftazidime',
+    'CRO': 'ceftriaxone', 'CIP': 'ciprofloxacin', 'AMK': 'amikacin', 'GEN': 'gentamicin',
+    'TOB': 'tobramycin', 'SXT': 'trimethoprim-sulfamethoxazole', 'IPM': 'imipenem',
+    'MEM': 'meropenem', 'PEN': 'penicillin', 'CHL': 'chloramphenicol', 'VAN': 'vancomycin',
+    'OXA': 'oxacillin', 'ERY': 'erythromycin', 'CLI': 'clindamycin', 'TCY': 'tetracycline',
+    'RIF': 'rifampicin', 'NIT': 'nitrofurantoin', 'NOR': 'norfloxacin', 'COL': 'colistin',
+    'KAN': 'kanamycin', 'STR': 'streptomycin', 'LVX': 'levofloxacin', 'MXF': 'moxifloxacin',
+    'INH': 'isoniazid', 'EMB': 'ethambutol', 'PZA': 'pyrazinamide', 'LZD': 'linezolid',
+}
+
+# Colonnes systematiquement exclues avant tout traitement - jamais stockees
+IDENTIFYING_COLUMNS = ['Last name', 'First name', 'Identification number', 'Specimen number', 'Comment']
 
 app = Flask(__name__)
 DB = '../data/db/vigieram.db'
@@ -117,6 +134,42 @@ def facility_report():
     ], check=True)
     from flask import send_file
     return send_file('facility_report.pdf', as_attachment=True)
+
+@app.route('/import-whonet', methods=['GET', 'POST'])
+def import_whonet():
+    if request.method == 'POST':
+        file = request.files.get('whonet_file')
+        facility_name = request.form.get('facility_name', '')
+        region = request.form.get('region', '')
+        if not file:
+            return "Aucun fichier recu", 400
+
+        df = pd.read_csv(file)
+        # Securite : suppression immediate des colonnes potentiellement identifiantes
+        df = df.drop(columns=[c for c in IDENTIFYING_COLUMNS if c in df.columns], errors='ignore')
+
+        abx_pattern = re.compile(r'^([A-Za-z]{2,4})_')
+        abx_columns = [c for c in df.columns if abx_pattern.match(c)]
+
+        conn = get_conn()
+        n_inserted = 0
+        for _, row in df.iterrows():
+            organism = row.get('Organism', 'Inconnu')
+            for col in abx_columns:
+                result = row.get(col)
+                if pd.isna(result) or result not in ('S', 'I', 'R'):
+                    continue
+                code = abx_pattern.match(col).group(1).upper()
+                antibiotic = ANTIBIOTIC_CODES.get(code, code.lower())
+                conn.execute(
+                    'INSERT INTO clinical_ast (organism, antibiotic, result, facility_type, facility_name, region, locality, context, date_added, entry_method) VALUES (?,?,?,?,?,?,?,?,?,?)',
+                    (str(organism), antibiotic, result, 'labo_reference', facility_name, region, '', '', str(date.today()), 'whonet_import')
+                )
+                n_inserted += 1
+        conn.commit()
+        conn.close()
+        return render_template('whonet_result.html', n_rows=len(df), n_inserted=n_inserted, dropped_cols=IDENTIFYING_COLUMNS)
+    return render_template('whonet_upload.html')
 
 if __name__ == '__main__':
     init_db()

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}VigieRAM — Import terminé{% endblock %}
+{% block content %}
+<h1 class="mb-4">Import terminé</h1>
+<div class="alert alert-success">
+{{ n_rows }} lignes lues dans le fichier, {{ n_inserted }} résultats S/I/R extraits et enregistrés.
+</div>
+<div class="alert alert-warning">
+Colonnes potentiellement identifiantes automatiquement exclues : {{ dropped_cols|join(', ') }}
+</div>
+<a href="/mon-etablissement" class="btn btn-primary">Voir les statistiques</a>
+{% endblock %}
