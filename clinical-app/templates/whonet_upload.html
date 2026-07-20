@@ -12,7 +12,8 @@ Les colonnes potentiellement identifiantes (nom, prénom, numéros d'identificat
   </div>
   <div class="mb-3">
     <label class="form-label">Nom de l'établissement (s'applique à tout le fichier)</label>
-    <input type="text" name="facility_name" class="form-control" required>
+    <input type="text" name="facility_name" class="form-control" required list="facilities-list" autocomplete="off">
+    <datalist id="facilities-list"></datalist>
   </div>
   <div class="mb-3">
     <label class="form-label">Région</label>

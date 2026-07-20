@@ -6,7 +6,14 @@ import subprocess
 from datetime import date
 import csv as csv_module
 import re
+import unicodedata
 
+
+def normalize_facility(name):
+    if not name:
+        return ''
+    nfkd = unicodedata.normalize('NFKD', name.strip().lower())
+    return ''.join(c for c in nfkd if not unicodedata.combining(c))
 
 ANTIBIOTIC_CODES = {
     'AMP': 'ampicillin', 'AMC': 'amoxicillin-clavulanic acid', 'TZP': 'piperacillin-tazobactam',
@@ -66,8 +73,8 @@ def init_db():
     conn = get_conn()
     conn.execute('''CREATE TABLE IF NOT EXISTS clinical_ast (
         id INTEGER PRIMARY KEY, organism TEXT NOT NULL, antibiotic TEXT NOT NULL,
-        result TEXT NOT NULL, facility_type TEXT, facility_name TEXT, region TEXT,
-        locality TEXT, context TEXT, date_added TEXT NOT NULL, entry_method TEXT)''')
+        result TEXT NOT NULL, facility_type TEXT, facility_name TEXT, facility_name_norm TEXT,
+        region TEXT, locality TEXT, context TEXT, date_added TEXT NOT NULL, entry_method TEXT)''')
     conn.execute('''CREATE TABLE IF NOT EXISTS genomic_surveillance (
         id INTEGER PRIMARY KEY, species TEXT NOT NULL, sample_id TEXT NOT NULL,
         genotype TEXT, resistance_profile TEXT, mdr INTEGER, xdr INTEGER,
@@ -119,10 +126,11 @@ def entry_form():
         antibiotic = request.form['antibiotic']
         region = request.form['region']
         conn = get_conn()
+        fname = request.form.get('facility_name', '')
         conn.execute(
-            'INSERT INTO clinical_ast (organism, antibiotic, result, facility_type, facility_name, region, locality, context, date_added, entry_method) VALUES (?,?,?,?,?,?,?,?,?,?)',
+            'INSERT INTO clinical_ast (organism, antibiotic, result, facility_type, facility_name, facility_name_norm, region, locality, context, date_added, entry_method) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
             (organism, antibiotic, request.form['result'], request.form['facility_type'],
-             request.form.get('facility_name', ''), region, request.form.get('locality', ''),
+             fname, normalize_facility(fname), region, request.form.get('locality', ''),
              request.form.get('context', ''), str(date.today()), 'manuel')
         )
         conn.commit()
@@ -140,8 +148,8 @@ def facility_stats():
 
     conn = get_conn()
     rows = conn.execute(
-        'SELECT organism, antibiotic, result, date_added FROM clinical_ast WHERE LOWER(facility_name) = LOWER(?) ORDER BY date_added',
-        (facility,)
+        'SELECT organism, antibiotic, result, date_added FROM clinical_ast WHERE facility_name_norm = ? ORDER BY date_added',
+        (normalize_facility(facility),)
     ).fetchall()
     conn.close()
 
@@ -197,8 +205,8 @@ def import_whonet():
                 code = abx_pattern.match(col).group(1).upper()
                 antibiotic = ANTIBIOTIC_CODES.get(code, code.lower())
                 conn.execute(
-                    'INSERT INTO clinical_ast (organism, antibiotic, result, facility_type, facility_name, region, locality, context, date_added, entry_method) VALUES (?,?,?,?,?,?,?,?,?,?)',
-                    (str(organism), antibiotic, result, 'labo_reference', facility_name, region, '', '', str(date.today()), 'whonet_import')
+                    'INSERT INTO clinical_ast (organism, antibiotic, result, facility_type, facility_name, facility_name_norm, region, locality, context, date_added, entry_method) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+                    (str(organism), antibiotic, result, 'labo_reference', facility_name, normalize_facility(facility_name), region, '', '', str(date.today()), 'whonet_import')
                 )
                 n_inserted += 1
                 if check_biological_plausibility(str(organism), antibiotic):
@@ -207,6 +215,16 @@ def import_whonet():
         conn.close()
         return render_template('whonet_result.html', n_rows=len(df), n_inserted=n_inserted, dropped_cols=IDENTIFYING_COLUMNS, n_implausible=n_implausible)
     return render_template('whonet_upload.html')
+
+@app.route('/api/facilities')
+def api_facilities():
+    conn = get_conn()
+    rows = conn.execute('SELECT DISTINCT facility_name FROM clinical_ast WHERE facility_name != ""').fetchall()
+    conn.close()
+    from flask import jsonify
+    return jsonify([r['facility_name'] for r in rows])
+
+
 
 if __name__ == '__main__':
     init_db()
