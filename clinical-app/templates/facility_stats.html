@@ -17,6 +17,7 @@
             <th>I</th>
             <th>S</th>
             <th>% Résistance</th>
+            <th>Tendance</th>
         </tr>
     </thead>
     <tbody>
@@ -28,11 +29,16 @@
             <td>{{ s['I'] }}</td>
             <td>{{ s['S'] }}</td>
             <td>{{ (100*s['R']/s['total'])|round(1) }}%
-                {% if s['total'] >= 5 and (100*s['R']/s['total']) > 50 %}
-                <span class="badge bg-danger">⚠️ Signal à surveiller</span>
-                {% elif s['total'] < 5 %}
-                <span class="badge bg-secondary">Données insuffisantes (n={{ s['total'] }})</span>
-                {% endif %}
+            {% if s['total'] >= 5 and (100*s['R']/s['total']) > 50 %}
+            <span class="badge bg-danger">⚠️ Signal à surveiller</span>
+            {% elif s['total'] < 5 %}
+            <span class="badge bg-secondary">Données insuffisantes (n={{ s['total'] }})</span>
+            {% endif %}
+            </td>
+            <td>
+            {% if s['total'] >= 5 %}
+            <a href="/mon-etablissement/tendance?facility_name={{ facility }}&organism={{ organism }}&antibiotic={{ antibiotic }}" class="btn btn-sm btn-outline-primary">📈 Voir</a>
+            {% else %}<span class="text-muted small">n/a</span>{% endif %}
             </td>
         </tr>
         {% endfor %}

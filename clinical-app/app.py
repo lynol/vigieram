@@ -224,7 +224,36 @@ def api_facilities():
     from flask import jsonify
     return jsonify([r['facility_name'] for r in rows])
 
+@app.route('/mon-etablissement/tendance')
+def facility_trend():
+    facility = request.args.get('facility_name', '')
+    organism = request.args.get('organism', '')
+    antibiotic = request.args.get('antibiotic', '')
+    conn = get_conn()
+    rows = conn.execute('''
+        SELECT strftime('%Y-%m', date_added) as month, result, COUNT(*) as n
+        FROM clinical_ast
+        WHERE facility_name_norm = ? AND organism = ? AND antibiotic = ?
+        GROUP BY month, result
+        ORDER BY month
+    ''', (normalize_facility(facility), organism, antibiotic)).fetchall()
+    conn.close()
 
+    months = {}
+    for r in rows:
+        months.setdefault(r['month'], {'R': 0, 'I': 0, 'S': 0})
+        months[r['month']][r['result']] = r['n']
+
+    labels = sorted(months.keys())
+    pct_r = []
+    totals = []
+    for m in labels:
+        total = sum(months[m].values())
+        totals.append(total)
+        pct_r.append(round(100 * months[m]['R'] / total, 1) if total else 0)
+
+    return render_template('facility_trend.html', facility=facility, organism=organism,
+                            antibiotic=antibiotic, labels=labels, pct_r=pct_r, totals=totals)
 
 if __name__ == '__main__':
     init_db()
